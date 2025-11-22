@@ -30,7 +30,6 @@ export default function DashboardScreen({ navigation }) {
   const [acceptRequest] = useAcceptRequestMutation();
 
   const renderItem = ({ item }) => {
-    console.log("this is the item details", item);
     const urgencyColor =
       item.urgency === "High" ? colors.primary : colors.secondary;
 

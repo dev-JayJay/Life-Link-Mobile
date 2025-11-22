@@ -21,6 +21,14 @@ export const bloodRequestApi = createApi({
       }),
     }),
 
+    createDonationRequest: builder.mutation({
+      query: (body) => ({
+        url: "/blood-requests/create-donor",
+        method: "POST",
+        body,
+      }),
+    }),
+
     getAllBloodRequests: builder.query({
       query: () => ({
         url: "/blood-requests",
@@ -34,6 +42,20 @@ export const bloodRequestApi = createApi({
         method: "POST",
       }),
     }),
+
+    getHospitalRequests: builder.query({
+      query: () => ({
+        url: "/blood-requests/hospital-request",
+        method: "GET",
+      }),
+    }),
+
+    getUserRequests: builder.query({
+      query: () => ({
+        url: "/blood-requests/user-request",
+        method: "GET",
+      }),
+    }),
   }),
 });
 
@@ -41,4 +63,7 @@ export const {
   useCreateBloodRequestMutation,
   useGetAllBloodRequestsQuery,
   useAcceptRequestMutation,
+  useCreateDonationRequestMutation,
+  useGetHospitalRequestsQuery,
+  useGetUserRequestsQuery,
 } = bloodRequestApi;
