@@ -1,5 +1,12 @@
 import React, { useState } from "react";
-import { View, Text, FlatList, TouchableOpacity, StyleSheet, Alert } from "react-native";
+import {
+  View,
+  Text,
+  FlatList,
+  TouchableOpacity,
+  StyleSheet,
+  Alert,
+} from "react-native";
 import ScreenWrapper from "../../components/ScreenWrapper";
 import Card from "../../components/Card";
 import { useTheme } from "../../constants/theme";
@@ -23,26 +30,30 @@ const matchedDonors = [
   { id: "7", name: "Mark Dylan", bloodType: "B+", distance: "1.5 km" },
 ];
 
-export default function HospitalDonorsScreen() {
+export default function HospitalDonorsRequestScreen() {
   const { colors } = useTheme();
   const [activeTab, setActiveTab] = useState("incoming");
   const [incomingDonors, setIncomingDonors] = useState(incomingDonorsList);
 
   const handleAccept = (id) => {
     Alert.alert("Accepted", "You have accepted the donor request.");
-    setIncomingDonors(prev => prev.filter(item => item.id !== id));
+    setIncomingDonors((prev) => prev.filter((item) => item.id !== id));
   };
 
   const handleDecline = (id) => {
     Alert.alert("Declined", "You have declined the donor request.");
-    setIncomingDonors(prev => prev.filter(item => item.id !== id));
+    setIncomingDonors((prev) => prev.filter((item) => item.id !== id));
   };
 
   const renderIncoming = ({ item }) => (
     <Card>
       <Text style={[styles.name, { color: colors.text }]}>{item.name}</Text>
-      <Text style={[styles.detail, { color: colors.subText }]}>Blood Type: {item.bloodType}</Text>
-      <Text style={[styles.subDetail, { color: colors.subText }]}>Requested: {item.time}</Text>
+      <Text style={[styles.detail, { color: colors.subText }]}>
+        Blood Type: {item.bloodType}
+      </Text>
+      <Text style={[styles.subDetail, { color: colors.subText }]}>
+        Requested: {item.time}
+      </Text>
 
       <View style={styles.row}>
         <TouchableOpacity
@@ -65,23 +76,43 @@ export default function HospitalDonorsScreen() {
   const renderRecent = ({ item }) => (
     <Card>
       <Text style={[styles.name, { color: colors.text }]}>{item.name}</Text>
-      <Text style={[styles.detail, { color: colors.subText }]}>Blood Type: {item.bloodType}</Text>
-      <Text style={[styles.subDetail, { color: colors.subText }]}>Donated: {item.date}</Text>
+      <Text style={[styles.detail, { color: colors.subText }]}>
+        Blood Type: {item.bloodType}
+      </Text>
+      <Text style={[styles.subDetail, { color: colors.subText }]}>
+        Donated: {item.date}
+      </Text>
     </Card>
   );
 
   const renderMatched = ({ item }) => (
     <Card>
       <Text style={[styles.name, { color: colors.text }]}>{item.name}</Text>
-      <Text style={[styles.detail, { color: colors.subText }]}>Blood Type: {item.bloodType}</Text>
-      <Text style={[styles.subDetail, { color: colors.subText }]}>Distance: {item.distance}</Text>
+      <Text style={[styles.detail, { color: colors.subText }]}>
+        Blood Type: {item.bloodType}
+      </Text>
+      <Text style={[styles.subDetail, { color: colors.subText }]}>
+        Distance: {item.distance}
+      </Text>
     </Card>
   );
 
   const TAB_DATA = {
-    incoming: { title: "Incoming Requests", data: incomingDonors, renderItem: renderIncoming },
-    recent: { title: "Recent Donors", data: recentDonors, renderItem: renderRecent },
-    matched: { title: "Matched Donors", data: matchedDonors, renderItem: renderMatched },
+    incoming: {
+      title: "Incoming Requests",
+      data: incomingDonors,
+      renderItem: renderIncoming,
+    },
+    recent: {
+      title: "Recent Donors",
+      data: recentDonors,
+      renderItem: renderRecent,
+    },
+    matched: {
+      title: "Matched Donors",
+      data: matchedDonors,
+      renderItem: renderMatched,
+    },
   };
 
   const active = TAB_DATA[activeTab];
@@ -90,12 +121,29 @@ export default function HospitalDonorsScreen() {
     <ScreenWrapper scrollable={false}>
       {/* TOP SWITCH TABS */}
       <View style={styles.tabContainer}>
-        <TabButton label="Incoming" active={activeTab === "incoming"} onPress={() => setActiveTab("incoming")} colors={colors} />
-        <TabButton label="Recent" active={activeTab === "recent"} onPress={() => setActiveTab("recent")} colors={colors} />
-        <TabButton label="Matched" active={activeTab === "matched"} onPress={() => setActiveTab("matched")} colors={colors} />
+        <TabButton
+          label="Incoming"
+          active={activeTab === "incoming"}
+          onPress={() => setActiveTab("incoming")}
+          colors={colors}
+        />
+        <TabButton
+          label="Recent"
+          active={activeTab === "recent"}
+          onPress={() => setActiveTab("recent")}
+          colors={colors}
+        />
+        <TabButton
+          label="Matched"
+          active={activeTab === "matched"}
+          onPress={() => setActiveTab("matched")}
+          colors={colors}
+        />
       </View>
 
-      <Text style={[styles.sectionTitle, { color: colors.text }]}>{active.title}</Text>
+      <Text style={[styles.sectionTitle, { color: colors.text }]}>
+        {active.title}
+      </Text>
 
       <FlatList
         data={active.data}

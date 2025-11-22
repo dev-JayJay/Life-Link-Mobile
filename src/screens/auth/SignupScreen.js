@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   View,
   Text,
@@ -12,6 +12,10 @@ import Button from "../../components/Button";
 import { useTheme } from "../../constants/theme";
 import { fontSizes, fonts } from "../../constants/fonts";
 import { sizes } from "../../constants/sizes";
+import { useRegisterUserMutation } from "../../api/authApi";
+import Toast from "react-native-toast-message";
+
+import * as Location from "expo-location";
 
 const SignupScreen = ({ navigation }) => {
   const { colors } = useTheme();
@@ -19,15 +23,119 @@ const SignupScreen = ({ navigation }) => {
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [phone, setPhone] = useState("");
   const [bloodType, setBloodType] = useState("");
   const [hospitalName, setHospitalName] = useState("");
   const [location, setLocation] = useState("");
+
+  const [locationCoords, setLocationCoords] = useState({
+    latitude: 0,
+    longitude: 0,
+  });
+
+  useEffect(() => {
+    (async () => {
+      try {
+        const { status } = await Location.requestForegroundPermissionsAsync();
+        if (status !== "granted") {
+          console.log("Permission to access location was denied");
+          return;
+        }
+
+        const location = await Location.getCurrentPositionAsync({});
+        setLocationCoords({
+          latitude: location.coords.latitude,
+          longitude: location.coords.longitude,
+        });
+      } catch (err) {
+        console.log("Error getting location:", err);
+      }
+    })();
+  }, []);
+
+  const [registerUser, { isLoading }] = useRegisterUserMutation();
+
+  const handleRegister = async () => {
+    if (
+      role === "user" &&
+      (!name.trim() ||
+        !email.trim() ||
+        !password.trim() ||
+        !phone.trim() ||
+        !bloodType.trim())
+    ) {
+      Toast.show({
+        type: "error",
+        text1: "Please fill all required fields",
+      });
+      return;
+    }
+
+    if (
+      role === "hospital" &&
+      (!name.trim() ||
+        !email.trim() ||
+        !password.trim() ||
+        !phone.trim() ||
+        !location.trim())
+    ) {
+      Toast.show({
+        type: "error",
+        text1: "Please fill all required fields",
+      });
+      return;
+    }
+
+    const payload =
+      role === "user"
+        ? {
+            name,
+            email,
+            phone,
+            password,
+            bloodType,
+            role: "user",
+            latitude: locationCoords.latitude,
+            longitude: locationCoords.longitude,
+          }
+        : {
+            name,
+            email,
+            phone,
+            password,
+            latitude: locationCoords.latitude,
+            longitude: locationCoords.longitude,
+            role: "hospital",
+          };
+
+    try {
+      const res = await registerUser(payload).unwrap();
+      Toast.show({
+        type: "success",
+        text1: "Registration Successful",
+      });
+
+      if (role === "hospital") {
+        navigation.navigate("HospitalHome");
+      } else {
+        navigation.navigate("UserTabs");
+      }
+    } catch (err) {
+      Toast.show({
+        type: "error",
+        text1: "Error",
+        text2: err?.data?.message || "Something went wrong",
+      });
+    }
+  };
 
   return (
     <ScreenWrapper>
       <View style={{ flex: 1, justifyContent: "center" }}>
         {/* Title */}
-        <Text style={[styles.title, { color: colors.text }]}>Create Account 🩸</Text>
+        <Text style={[styles.title, { color: colors.text }]}>
+          Create Account 🩸
+        </Text>
         <Text style={[styles.subtitle, { color: colors.subText }]}>
           Join LifeLink and save lives
         </Text>
@@ -38,8 +146,7 @@ const SignupScreen = ({ navigation }) => {
             style={[
               styles.toggleButton,
               {
-                backgroundColor:
-                  role === "user" ? colors.primary : colors.card,
+                backgroundColor: role === "user" ? colors.primary : colors.card,
               },
             ]}
             onPress={() => setRole("user")}
@@ -87,6 +194,12 @@ const SignupScreen = ({ navigation }) => {
               onChangeText={setName}
             />
             <Input
+              placeholder="Phone Number"
+              value={phone}
+              onChangeText={setPhone}
+            />
+
+            <Input
               placeholder="Email Address"
               value={email}
               onChangeText={setEmail}
@@ -107,8 +220,8 @@ const SignupScreen = ({ navigation }) => {
           <>
             <Input
               placeholder="Hospital Name"
-              value={hospitalName}
-              onChangeText={setHospitalName}
+              value={name}
+              onChangeText={setName}
             />
             <Input
               placeholder="Email Address"
@@ -116,11 +229,17 @@ const SignupScreen = ({ navigation }) => {
               onChangeText={setEmail}
             />
             <Input
+              placeholder="Phone Number"
+              value={phone}
+              onChangeText={setPhone}
+            />
+            <Input
               placeholder="Password"
               value={password}
               onChangeText={setPassword}
               secureTextEntry
             />
+
             <Input
               placeholder="Hospital Location"
               value={location}
@@ -130,11 +249,19 @@ const SignupScreen = ({ navigation }) => {
         )}
 
         {/* Submit */}
-        <Button title="Sign Up" onPress={() => navigation.navigate("HospitalHome")} />
+        <Button
+          title={isLoading ? "Signing Up..." : "Sign Up"}
+          onPress={handleRegister}
+          disabled={
+            locationCoords.latitude === 0 && locationCoords.longitude === 0
+          }
+        />
 
         {/* Bottom Link */}
         <View style={styles.bottomText}>
-          <Text style={{ color: colors.subText }}>Already have an account?</Text>
+          <Text style={{ color: colors.subText }}>
+            Already have an account?
+          </Text>
           <TouchableOpacity onPress={() => navigation.navigate("Login")}>
             <Text style={[styles.link, { color: colors.primary }]}> Login</Text>
           </TouchableOpacity>

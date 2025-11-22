@@ -1,6 +1,6 @@
-import { createStore, combineReducers } from "redux";
+import { configureStore } from '@reduxjs/toolkit';
+import { authApi } from '../api/authApi';
 
-// Example reducer (you can replace later)
 const initialState = { theme: "dark" };
 
 const themeReducer = (state = initialState, action) => {
@@ -12,10 +12,11 @@ const themeReducer = (state = initialState, action) => {
   }
 };
 
-const rootReducer = combineReducers({
-  theme: themeReducer,
+export const store = configureStore({
+  reducer: {
+    theme: themeReducer,
+    [authApi.reducerPath]: authApi.reducer,
+  },
+  middleware: (getDefaultMiddleware) =>
+    getDefaultMiddleware().concat(authApi.middleware),
 });
-
-const store = createStore(rootReducer);
-
-export default store;
