@@ -2,7 +2,7 @@ import React from "react";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
 import HospitalDashboard from "../screens/hospital/HospitalDashboard";
 import HospitalProfileScreen from "../screens/hospital/HospitalProfileScreen";
-import IncomingRequestsScreen from "../screens/hospital/IncomingRequestsScreen"; // new
+import HospitalDonorsRequestScreen from "../screens/hospital/HospitalDonorsRequestScreen"; // new
 import AcceptedRequestsScreen from "../screens/hospital/AcceptedRequestsScreen"; // new
 import { useTheme } from "../constants/theme";
 import { Ionicons } from "@expo/vector-icons";
@@ -29,8 +29,8 @@ export default function HospitalNavigator() {
         }}
       />
       <Tab.Screen
-        name="Incoming Requests"
-        component={IncomingRequestsScreen}
+        name="Requests"
+        component={HospitalDonorsRequestScreen}
         options={{
           tabBarIcon: ({ color, size }) => <Ionicons name="list-outline" color={color} size={size} />,
         }}
