@@ -7,6 +7,7 @@ import {
   TouchableOpacity,
   Image,
 } from "react-native";
+
 import ScreenWrapper from "../../components/ScreenWrapper";
 import { useTheme } from "../../constants/theme";
 import { fontSizes, fonts } from "../../constants/fonts";
@@ -14,67 +15,102 @@ import { sizes } from "../../constants/sizes";
 import Card from "../../components/Card";
 import Button from "../../components/Button";
 
-// Mock data
-const mockRequests = [
-  { id: "1", hospital: "City General Hospital", bloodType: "O+", distance: "2.4 km", urgency: "High" },
-  { id: "2", hospital: "St. Mary’s Medical Center", bloodType: "A-", distance: "5.8 km", urgency: "Medium" },
-  { id: "3", hospital: "HopeCare Clinic", bloodType: "B+", distance: "1.2 km", urgency: "High" },
-];
-
-// Mock user
-const mockUser = { name: "Danjuma Nathaniel", bloodType: "O+", profilePic: null };
+import {
+  useAcceptRequestMutation,
+  useGetAllBloodRequestsQuery,
+} from "../../api/bloodRequestApi";
+import { useSelector } from "react-redux";
 
 export default function DashboardScreen({ navigation }) {
   const { colors } = useTheme();
+  const { user, bloodType } = useSelector((state) => state.auth);
 
-  const renderItem = ({ item }) => (
-    <Card
-      title={item.hospital}
-      subtitle={`Blood Type Needed: ${item.bloodType} | Distance: ${item.distance}`}
-      style={{ borderLeftWidth: 5, borderLeftColor: item.urgency === "High" ? colors.primary : colors.secondary }}
-    >
-      <Button
-        title="Accept Request"
-        onPress={() => alert(`Accepted request for ${item.hospital}`)}
-        style={{ marginTop: sizes.base }}
-      />
-    </Card>
-  );
+  // Fetch live requests
+  const { data, isLoading, error } = useGetAllBloodRequestsQuery();
+  const [acceptRequest] = useAcceptRequestMutation();
+
+  const renderItem = ({ item }) => {
+    console.log("this is the item details", item);
+    const urgencyColor =
+      item.urgency === "High" ? colors.primary : colors.secondary;
+
+    return (
+      <Card
+        title={item.hospital?.name || "Unknown Hospital"}
+        subtitle={`Blood Type Needed: ${item.bloodType} | Units: ${item.units}`}
+        style={{
+          borderLeftWidth: 5,
+          borderLeftColor: urgencyColor,
+        }}
+      >
+        <Button
+          title="Accept Request"
+          onPress={async () => {
+            try {
+              await acceptRequest({
+                requestId: item.id,
+                donorId: user.id,
+              }).unwrap();
+              Toast.show({ type: "success", text1: "Request Accepted!" });
+            } catch (err) {
+              Toast.show({
+                type: "error",
+                text1: "Failed to accept request",
+                text2: err?.data?.error || "Something went wrong",
+              });
+            }
+          }}
+          style={{ marginTop: sizes.base }}
+        />
+      </Card>
+    );
+  };
 
   return (
-    <ScreenWrapper scrollable={false} style={{ backgroundColor: colors.background }}>
+    <ScreenWrapper
+      scrollable={false}
+      style={{ backgroundColor: colors.background }}
+    >
       <View style={{ flex: 1 }}>
-        {/* User Info + Notification */}
+        {/* User Info */}
         <Card style={styles.userCard}>
           <View style={{ flexDirection: "row", alignItems: "center" }}>
             <View style={styles.profilePic}>
-              {mockUser.profilePic ? (
-                <Image source={{ uri: mockUser.profilePic }} style={styles.profilePic} />
-              ) : (
-                <Text style={{ color: colors.background, fontSize: fontSizes.large }}>
-                  {mockUser.name[0]}
+              {user?.fullName ? (
+                <Text
+                  style={{
+                    color: colors.background,
+                    fontSize: fontSizes.large,
+                  }}
+                >
+                  {user.fullName[0]}
                 </Text>
-              )}
+              ) : null}
             </View>
+
             <View style={{ marginLeft: sizes.base }}>
-              <Text style={[styles.userName, { color: colors.text }]}>{mockUser.name}</Text>
+              <Text style={[styles.userName, { color: colors.text }]}>
+                {user?.fullName}
+              </Text>
               <Text style={[styles.userBlood, { color: colors.primary }]}>
-                Blood Type: {mockUser.bloodType}
+                Blood Type: {user?.bloodType || "Unknown"}
               </Text>
             </View>
           </View>
-
-          <TouchableOpacity onPress={() => navigation.navigate("My Requests")}>
-            <Text style={{ fontSize: 24, color: colors.primary }}></Text>
-          </TouchableOpacity>
         </Card>
 
-        {/* Dashboard Title */}
-        <Text style={[styles.title, { color: colors.text }]}>Nearby Blood Requests 🩸</Text>
+        {/* Title */}
+        <Text style={[styles.title, { color: colors.text }]}>
+          Nearby Blood Requests 🩸
+        </Text>
 
-        {/* Blood Requests List */}
+        {/* Loading / Error Handling */}
+        {isLoading && <Text style={{ color: colors.text }}>Loading...</Text>}
+        {error && <Text style={{ color: "red" }}>Failed to load requests</Text>}
+
+        {/* Blood Requests */}
         <FlatList
-          data={mockRequests}
+          data={data || []}
           keyExtractor={(item) => item.id}
           renderItem={renderItem}
           showsVerticalScrollIndicator={false}
@@ -98,11 +134,6 @@ const styles = StyleSheet.create({
     padding: sizes.padding,
     marginBottom: sizes.padding,
     borderRadius: sizes.radius,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 3,
-    elevation: 3,
   },
   profilePic: {
     width: 50,
