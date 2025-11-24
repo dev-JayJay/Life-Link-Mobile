@@ -21,7 +21,7 @@ import { useCreateBloodRequestMutation } from "../../api/bloodRequestApi";
 
 export default function CreateRequestScreen({ navigation }) {
   const { colors } = useTheme();
-  const { user, hospital, token, role } = useSelector((state) => state.auth);
+  const { hospital } = useSelector((state) => state.auth);
 
   const [bloodType, setBloodType] = useState("");
   const [units, setUnits] = useState("");
@@ -36,7 +36,6 @@ export default function CreateRequestScreen({ navigation }) {
     longitude: hospital?.longitude,
   };
 
-  // console.log("this is the hospital data", hospitalData);
 
   const handleSubmit = async () => {
     if (!bloodType || !units) {
@@ -54,7 +53,6 @@ export default function CreateRequestScreen({ navigation }) {
         latitude: hospitalData.latitude,
         longitude: hospitalData.longitude,
       }).unwrap();
-      console.log("this is the response for creating", res);
 
       Toast.show({ type: "success", text1: "Blood request submitted!" });
 

@@ -27,7 +27,19 @@ export default function DashboardScreen({ navigation }) {
 
   // Fetch live requests
   const { data, isLoading, error } = useGetAllBloodRequestsQuery();
-  const [acceptRequest] = useAcceptRequestMutation();
+    const [acceptRequest] = useAcceptRequestMutation();
+
+  const handleAccept = async (id) => {
+    try {
+      await acceptRequest(id).unwrap();
+      Alert.alert("Accepted", "You have accepted the donation blood request.");
+    } catch (err) {
+      Alert.alert("Error", "Failed to accept the request.");
+      console.error(err);
+    }
+  };
+  const pendingRequests =
+    data?.filter((item) => item.status === "pending") || [];
 
   const renderItem = ({ item }) => {
     const urgencyColor =
@@ -44,21 +56,7 @@ export default function DashboardScreen({ navigation }) {
       >
         <Button
           title="Accept Request"
-          onPress={async () => {
-            try {
-              await acceptRequest({
-                requestId: item.id,
-                donorId: user.id,
-              }).unwrap();
-              Toast.show({ type: "success", text1: "Request Accepted!" });
-            } catch (err) {
-              Toast.show({
-                type: "error",
-                text1: "Failed to accept request",
-                text2: err?.data?.error || "Something went wrong",
-              });
-            }
-          }}
+          onPress={() => handleAccept(item.id)}
           style={{ marginTop: sizes.base }}
         />
       </Card>
@@ -92,7 +90,7 @@ export default function DashboardScreen({ navigation }) {
                 {user?.fullName}
               </Text>
               <Text style={[styles.userBlood, { color: colors.primary }]}>
-                Blood Type: {user?.bloodType || "Unknown"}
+                Blood Type: {user?.bloodGroup || "Unknown"}
               </Text>
             </View>
           </View>
@@ -109,7 +107,7 @@ export default function DashboardScreen({ navigation }) {
 
         {/* Blood Requests */}
         <FlatList
-          data={data || []}
+          data={pendingRequests}
           keyExtractor={(item) => item.id}
           renderItem={renderItem}
           showsVerticalScrollIndicator={false}

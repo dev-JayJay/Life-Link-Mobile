@@ -6,14 +6,18 @@ import Card from "../../components/Card";
 import { useTheme } from "../../constants/theme";
 import { fontSizes, fonts } from "../../constants/fonts";
 import { sizes } from "../../constants/sizes";
+import { useDispatch, useSelector } from "react-redux";
+import { logout } from "../../redux/slice/authSlice";
 
 export default function ProfileScreen({ navigation }) {
   const { colors } = useTheme();
+  const dispatch = useDispatch();
+  const { user: userData } = useSelector((state) => state.auth);
 
   const user = {
-    name: "Danjuma Nathaniel",
-    email: "nath@example.com",
-    bloodType: "O+",
+    name: userData?.fullName || "Danjuma Nathaniel",
+    email: userData?.email || "nath@example.com",
+    bloodType: userData?.bloodGroup || "-",
   };
 
   // Get initials
@@ -38,25 +42,36 @@ export default function ProfileScreen({ navigation }) {
       <Card style={{ paddingVertical: sizes.padding }}>
         <View style={styles.infoRow}>
           <Text style={[styles.label, { color: colors.subText }]}>Name:</Text>
-          <Text style={[styles.value, { color: colors.text }]}>{user.name}</Text>
+          <Text style={[styles.value, { color: colors.text }]}>
+            {user.name}
+          </Text>
         </View>
 
         <View style={styles.infoRow}>
           <Text style={[styles.label, { color: colors.subText }]}>Email:</Text>
-          <Text style={[styles.value, { color: colors.text }]}>{user.email}</Text>
+          <Text style={[styles.value, { color: colors.text }]}>
+            {user.email}
+          </Text>
         </View>
 
         <View style={styles.infoRow}>
-          <Text style={[styles.label, { color: colors.subText }]}>Blood Type:</Text>
-          <Text style={[styles.value, { color: colors.primary }]}>{user.bloodType}</Text>
+          <Text style={[styles.label, { color: colors.subText }]}>
+            Blood Type:
+          </Text>
+          <Text style={[styles.value, { color: colors.primary }]}>
+            {user.bloodType}
+          </Text>
         </View>
       </Card>
 
       {/* Logout */}
       <Button
         title="Logout"
-        onPress={() => navigation.navigate("Login")}
-        style={{ marginTop: sizes.padding, backgroundColor: colors.primary + "80" }}
+        onPress={() => {
+          dispatch(logout());
+          navigation.navigate("Login");
+        }}
+        style={{ marginTop: sizes.padding, backgroundColor: colors.primary }}
       />
     </ScreenWrapper>
   );

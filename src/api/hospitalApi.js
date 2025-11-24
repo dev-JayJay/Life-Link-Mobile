@@ -13,16 +13,21 @@ export const hospitalApi = createApi({
     },
   }),
   endpoints: (builder) => ({
-
     getAllHospitals: builder.query({
       query: () => ({
         url: "/hospitals",
         method: "GET",
       }),
     }),
+
+    getHospitalDonations: builder.query({
+      query: () => ({
+        url: "/hospitals/donations",
+        method: "GET",
+      }),
+    }),
   }),
 });
 
-export const {
-    useGetAllHospitalsQuery 
-} = hospitalApi;
+export const { useGetAllHospitalsQuery, useGetHospitalDonationsQuery } =
+  hospitalApi;

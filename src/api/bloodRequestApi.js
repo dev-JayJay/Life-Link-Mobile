@@ -12,6 +12,9 @@ export const bloodRequestApi = createApi({
       return headers;
     },
   }),
+
+  tagTypes: ["Requests", "HospitalRequests", "UserRequests"],
+
   endpoints: (builder) => ({
     createBloodRequest: builder.mutation({
       query: (body) => ({
@@ -19,6 +22,7 @@ export const bloodRequestApi = createApi({
         method: "POST",
         body,
       }),
+      invalidatesTags: ["Requests", "UserRequests"],
     }),
 
     createDonationRequest: builder.mutation({
@@ -27,6 +31,7 @@ export const bloodRequestApi = createApi({
         method: "POST",
         body,
       }),
+      invalidatesTags: ["Requests", "UserRequests"],
     }),
 
     getAllBloodRequests: builder.query({
@@ -34,13 +39,23 @@ export const bloodRequestApi = createApi({
         url: "/blood-requests",
         method: "GET",
       }),
+      providesTags: ["Requests"],
     }),
 
     acceptRequest: builder.mutation({
       query: (requestId) => ({
         url: `/blood-requests/${requestId}/accept`,
-        method: "POST",
+        method: "PATCH",
       }),
+      invalidatesTags: ["Requests", "HospitalRequests"],
+    }),
+
+    rejectRequest: builder.mutation({
+      query: (requestId) => ({
+        url: `/blood-requests/${requestId}/reject`,
+        method: "PATCH",
+      }),
+      invalidatesTags: ["Requests", "HospitalRequests"],
     }),
 
     getHospitalRequests: builder.query({
@@ -48,6 +63,7 @@ export const bloodRequestApi = createApi({
         url: "/blood-requests/hospital-request",
         method: "GET",
       }),
+      providesTags: ["HospitalRequests"],
     }),
 
     getUserRequests: builder.query({
@@ -55,6 +71,7 @@ export const bloodRequestApi = createApi({
         url: "/blood-requests/user-request",
         method: "GET",
       }),
+      providesTags: ["UserRequests"],
     }),
   }),
 });
@@ -63,6 +80,7 @@ export const {
   useCreateBloodRequestMutation,
   useGetAllBloodRequestsQuery,
   useAcceptRequestMutation,
+  useRejectRequestMutation,
   useCreateDonationRequestMutation,
   useGetHospitalRequestsQuery,
   useGetUserRequestsQuery,

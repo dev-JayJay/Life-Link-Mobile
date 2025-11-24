@@ -1,35 +1,36 @@
-import React, { useState } from "react";
-import { View, Text, TextInput, StyleSheet } from "react-native";
+import React from "react";
+import { View, Text, StyleSheet } from "react-native";
+import { useSelector, useDispatch } from "react-redux";
 import ScreenWrapper from "../../components/ScreenWrapper";
 import Button from "../../components/Button";
 import Card from "../../components/Card";
 import { useTheme } from "../../constants/theme";
 import { fonts, fontSizes } from "../../constants/fonts";
 import { sizes } from "../../constants/sizes";
+import { logout } from "../../redux/slice/authSlice";
 
 export default function HospitalProfileScreen({ navigation }) {
   const { colors } = useTheme();
+  const dispatch = useDispatch();
 
-  // Mock state
-  const [name, setName] = useState("City Hospital");
-  const [address, setAddress] = useState("123 Main Street");
-  const [contact, setContact] = useState("+234-9-461-4000");
-  const [email, setEmail] = useState("hospital@example.com");
+  const { hospital, user } = useSelector((state) => state.auth);
 
-  // Get initials for avatar
+ 
+  const name = hospital?.name || "Hospital";
+  const address = hospital?.address || "Not provided";
+  const contact = hospital?.contact || hospital?.phone || "Not available";
+  const email = user?.email || "Not available";
+
+
   const initials = name
     .split(" ")
     .map((n) => n[0])
     .join("")
     .toUpperCase();
 
-  const handleSave = () => {
-    alert("Profile updated!");
-  };
-
   const handleLogout = () => {
-    alert("Logged out!");
-    navigation.navigate("Login");
+    dispatch(logout());
+    navigation.replace("Login");
   };
 
   return (
@@ -46,52 +47,30 @@ export default function HospitalProfileScreen({ navigation }) {
       </View>
 
       <Card style={{ paddingVertical: sizes.padding }}>
-        <View style={styles.inputGroup}>
+        <View style={styles.infoGroup}>
           <Text style={[styles.label, { color: colors.subText }]}>Name</Text>
-          <TextInput
-            value={name}
-            onChangeText={setName}
-            style={[styles.input, { borderColor: colors.border, color: colors.text }]}
-          />
+          <Text style={[styles.value, { color: colors.text }]}>{name}</Text>
         </View>
 
-        <View style={styles.inputGroup}>
+        <View style={styles.infoGroup}>
           <Text style={[styles.label, { color: colors.subText }]}>Address</Text>
-          <TextInput
-            value={address}
-            onChangeText={setAddress}
-            style={[styles.input, { borderColor: colors.border, color: colors.text }]}
-          />
+          <Text style={[styles.value, { color: colors.text }]}>{address}</Text>
         </View>
 
-        <View style={styles.inputGroup}>
+        <View style={styles.infoGroup}>
           <Text style={[styles.label, { color: colors.subText }]}>Contact</Text>
-          <TextInput
-            value={contact}
-            onChangeText={setContact}
-            style={[styles.input, { borderColor: colors.border, color: colors.text }]}
-          />
+          <Text style={[styles.value, { color: colors.text }]}>{contact}</Text>
         </View>
 
-        <View style={styles.inputGroup}>
+        <View style={styles.infoGroup}>
           <Text style={[styles.label, { color: colors.subText }]}>Email</Text>
-          <TextInput
-            value={email}
-            onChangeText={setEmail}
-            style={[styles.input, { borderColor: colors.border, color: colors.text }]}
-          />
+          <Text style={[styles.value, { color: colors.text }]}>{email}</Text>
         </View>
-
-        <Button
-          title="Save Changes"
-          onPress={handleSave}
-          style={{ marginTop: sizes.padding }}
-        />
 
         <Button
           title="Logout"
           onPress={handleLogout}
-          style={{ marginTop: sizes.base, backgroundColor: colors.primary + "80" }}
+          style={{ marginTop: sizes.base, backgroundColor: colors.primary }}
         />
       </Card>
     </ScreenWrapper>
@@ -118,18 +97,16 @@ const styles = StyleSheet.create({
     fontSize: fontSizes.large * 1.5,
     fontFamily: fonts.bold,
   },
-  inputGroup: {
-    marginBottom: sizes.base,
+  infoGroup: {
+    marginBottom: sizes.padding,
   },
   label: {
     fontFamily: fonts.medium,
     fontSize: fontSizes.medium,
-    marginBottom: 4,
+    marginBottom: 2,
   },
-  input: {
-    borderWidth: 1,
-    borderRadius: sizes.radius,
-    padding: sizes.base,
-    fontFamily: fonts.regular,
+  value: {
+    fontFamily: fonts.bold,
+    fontSize: fontSizes.medium,
   },
 });

@@ -5,6 +5,7 @@ import {
   FlatList,
   TouchableOpacity,
   StyleSheet,
+  ActivityIndicator,
   Alert,
 } from "react-native";
 import ScreenWrapper from "../../components/ScreenWrapper";
@@ -12,143 +13,136 @@ import Card from "../../components/Card";
 import { useTheme } from "../../constants/theme";
 import { fonts, fontSizes } from "../../constants/fonts";
 import { sizes } from "../../constants/sizes";
-
-// Incoming donor requests
-const incomingDonorsList = [
-  { id: "1", name: "John Doe", bloodType: "O+", time: "5 mins ago" },
-  { id: "2", name: "Sarah Lee", bloodType: "A+", time: "12 mins ago" },
-];
-
-const recentDonors = [
-  { id: "3", name: "Michael Cruz", bloodType: "B-", date: "Yesterday" },
-  { id: "4", name: "Anna Kim", bloodType: "AB+", date: "2 days ago" },
-];
-
-const matchedDonors = [
-  { id: "5", name: "Emma Stone", bloodType: "O+", distance: "2 km" },
-  { id: "6", name: "James Allen", bloodType: "A-", distance: "4 km" },
-  { id: "7", name: "Mark Dylan", bloodType: "B+", distance: "1.5 km" },
-];
+import { useGetHospitalRequestsQuery, useAcceptRequestMutation, useRejectRequestMutation } from "../../api/bloodRequestApi";
 
 export default function HospitalDonorsRequestScreen() {
   const { colors } = useTheme();
-  const [activeTab, setActiveTab] = useState("incoming");
-  const [incomingDonors, setIncomingDonors] = useState(incomingDonorsList);
+  const [activeTab, setActiveTab] = useState("pending");
 
-  const handleAccept = (id) => {
-    Alert.alert("Accepted", "You have accepted the donor request.");
-    setIncomingDonors((prev) => prev.filter((item) => item.id !== id));
+  // Fetch hospital requests
+  const { data, isLoading, isError } = useGetHospitalRequestsQuery();
+  console.log("this hospital data", data);
+  const [acceptRequest] = useAcceptRequestMutation();
+  const [rejectRequest] = useRejectRequestMutation();
+
+  const requests = data?.data || [];
+
+  // Categorize requests by status
+  const categorizedRequests = {
+    pending: requests.filter(r => r.status === "pending"),
+    accepted: requests.filter(r => r.status === "accepted"),
+    rejected: requests.filter(r => r.status === "rejected"),
   };
-
-  const handleDecline = (id) => {
-    Alert.alert("Declined", "You have declined the donor request.");
-    setIncomingDonors((prev) => prev.filter((item) => item.id !== id));
-  };
-
-  const renderIncoming = ({ item }) => (
-    <Card>
-      <Text style={[styles.name, { color: colors.text }]}>{item.name}</Text>
-      <Text style={[styles.detail, { color: colors.subText }]}>
-        Blood Type: {item.bloodType}
-      </Text>
-      <Text style={[styles.subDetail, { color: colors.subText }]}>
-        Requested: {item.time}
-      </Text>
-
-      <View style={styles.row}>
-        <TouchableOpacity
-          style={[styles.acceptBtn, { backgroundColor: colors.primary }]}
-          onPress={() => handleAccept(item.id)}
-        >
-          <Text style={styles.btnText}>Accept</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          style={[styles.declineBtn, { backgroundColor: "#d9534f" }]}
-          onPress={() => handleDecline(item.id)}
-        >
-          <Text style={styles.btnText}>Decline</Text>
-        </TouchableOpacity>
-      </View>
-    </Card>
-  );
-
-  const renderRecent = ({ item }) => (
-    <Card>
-      <Text style={[styles.name, { color: colors.text }]}>{item.name}</Text>
-      <Text style={[styles.detail, { color: colors.subText }]}>
-        Blood Type: {item.bloodType}
-      </Text>
-      <Text style={[styles.subDetail, { color: colors.subText }]}>
-        Donated: {item.date}
-      </Text>
-    </Card>
-  );
-
-  const renderMatched = ({ item }) => (
-    <Card>
-      <Text style={[styles.name, { color: colors.text }]}>{item.name}</Text>
-      <Text style={[styles.detail, { color: colors.subText }]}>
-        Blood Type: {item.bloodType}
-      </Text>
-      <Text style={[styles.subDetail, { color: colors.subText }]}>
-        Distance: {item.distance}
-      </Text>
-    </Card>
-  );
 
   const TAB_DATA = {
-    incoming: {
-      title: "Incoming Requests",
-      data: incomingDonors,
-      renderItem: renderIncoming,
+    pending: {
+      title: "Incoming",
+      data: categorizedRequests.pending,
     },
-    recent: {
-      title: "Recent Donors",
-      data: recentDonors,
-      renderItem: renderRecent,
+    accepted: {
+      title: "Accepted",
+      data: categorizedRequests.accepted,
     },
-    matched: {
-      title: "Matched Donors",
-      data: matchedDonors,
-      renderItem: renderMatched,
+    rejected: {
+      title: "Rejected",
+      data: categorizedRequests.rejected,
     },
   };
 
   const active = TAB_DATA[activeTab];
 
+  const handleAccept = async (id) => {
+    try {
+      await acceptRequest(id).unwrap();
+      Alert.alert("Accepted", "You have accepted the donor request.");
+    } catch (err) {
+      Alert.alert("Error", "Failed to accept the request.");
+      console.error(err);
+    }
+  };
+
+  const handleReject = async (id) => {
+    try {
+      await rejectRequest(id).unwrap();
+      Alert.alert("Rejected", "You have rejected the donor request.");
+    } catch (err) {
+      Alert.alert("Error", "Failed to accept the request.");
+      console.error(err);
+    }
+  };
+
+
+  const renderRequest = ({ item }) => (
+    <Card>
+      <Text style={[styles.name, { color: colors.text }]}>
+        {item.user ? item.user.fullName : "Anonymous Donor"}
+      </Text>
+      <Text style={[styles.detail, { color: colors.subText }]}>
+        Blood Type: {item.bloodType}
+      </Text>
+      <Text style={[styles.detail, { color: colors.subText }]}>
+        Units: {item.units}
+      </Text>
+      <Text style={[styles.detail, { color: colors.subText }]}>
+        Status: {item.status}
+      </Text>
+      {item.notes && (
+        <Text style={[styles.detail, { color: colors.subText }]}>
+          Notes: {item.notes}
+        </Text>
+      )}
+
+      {item.status === "pending" && (
+        <View style={styles.row}>
+          <TouchableOpacity
+            style={[styles.acceptBtn, { backgroundColor: colors.primary }]}
+            onPress={() => handleAccept(item.id)}
+          >
+            <Text style={styles.btnText}>Accept</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={[styles.declineBtn, { backgroundColor: "#d9534f" }]}
+            onPress={() => handleReject(item.id)}
+          >
+            <Text style={styles.btnText}>Decline</Text>
+          </TouchableOpacity>
+        </View>
+      )}
+    </Card>
+  );
+
   return (
     <ScreenWrapper scrollable={false}>
-      {/* TOP SWITCH TABS */}
+      {/* Tabs */}
       <View style={styles.tabContainer}>
-        <TabButton
-          label="Incoming"
-          active={activeTab === "incoming"}
-          onPress={() => setActiveTab("incoming")}
-          colors={colors}
-        />
-        <TabButton
-          label="Recent"
-          active={activeTab === "recent"}
-          onPress={() => setActiveTab("recent")}
-          colors={colors}
-        />
-        <TabButton
-          label="Matched"
-          active={activeTab === "matched"}
-          onPress={() => setActiveTab("matched")}
-          colors={colors}
-        />
+        {Object.keys(TAB_DATA).map((tab) => (
+          <TabButton
+            key={tab}
+            label={TAB_DATA[tab].title}
+            active={activeTab === tab}
+            onPress={() => setActiveTab(tab)}
+            colors={colors}
+          />
+        ))}
       </View>
 
-      <Text style={[styles.sectionTitle, { color: colors.text }]}>
-        {active.title}
-      </Text>
+      {isLoading && <ActivityIndicator size="large" color={colors.primary} />}
+      {isError && (
+        <Text style={{ color: "red", textAlign: "center" }}>
+          Failed to load requests.
+        </Text>
+      )}
+      {!isLoading && active.data.length === 0 && (
+        <Text style={{ color: colors.subText, textAlign: "center", marginTop: 20 }}>
+          No requests in this category.
+        </Text>
+      )}
 
       <FlatList
         data={active.data}
         keyExtractor={(item) => item.id}
-        renderItem={active.renderItem}
+        renderItem={renderRequest}
         showsVerticalScrollIndicator={false}
         contentContainerStyle={{ paddingBottom: 80 }}
       />
@@ -160,17 +154,9 @@ function TabButton({ label, active, onPress, colors }) {
   return (
     <TouchableOpacity
       onPress={onPress}
-      style={[
-        styles.tabButton,
-        { borderBottomColor: active ? colors.primary : "transparent" },
-      ]}
+      style={[styles.tabButton, { borderBottomColor: active ? colors.primary : "transparent" }]}
     >
-      <Text
-        style={[
-          styles.tabText,
-          { color: active ? colors.primary : colors.subText },
-        ]}
-      >
+      <Text style={[styles.tabText, { color: active ? colors.primary : colors.subText }]}>
         {label}
       </Text>
     </TouchableOpacity>
@@ -193,21 +179,12 @@ const styles = StyleSheet.create({
     fontFamily: fonts.medium,
     fontSize: fontSizes.medium,
   },
-  sectionTitle: {
-    fontSize: fontSizes.large,
-    fontFamily: fonts.bold,
-    marginBottom: sizes.base,
-  },
   name: {
     fontSize: fontSizes.medium,
     fontFamily: fonts.bold,
   },
   detail: {
     fontSize: fontSizes.medium,
-    marginTop: 2,
-  },
-  subDetail: {
-    fontSize: fontSizes.small,
     marginTop: 2,
   },
   row: {
