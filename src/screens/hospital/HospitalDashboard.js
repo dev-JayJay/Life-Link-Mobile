@@ -5,15 +5,16 @@ import Card from "../../components/Card";
 import { useTheme } from "../../constants/theme";
 import { fonts, fontSizes } from "../../constants/fonts";
 import { sizes } from "../../constants/sizes";
+import { useSelector } from "react-redux";
 
 export default function HospitalDashboard({ navigation }) {
   const { colors } = useTheme();
+  const { hospital: hospitalData, user } = useSelector((state) => state.auth);
 
-  // Mock hospital data
   const hospital = {
-    name: "City General Hospital",
-    address: "123 Main Street",
-    contact: "123-456-7890",
+    name: hospitalData?.name || "Hospital",
+    address: hospitalData?.address || "Not provided",
+    contact: hospitalData?.contact || hospitalData?.phone || "Not available",
   };
 
   return (
@@ -32,41 +33,33 @@ export default function HospitalDashboard({ navigation }) {
       </Card>
 
       {/* Dashboard Title */}
-      <Text style={[styles.title, { color: colors.text }]}>
-        Quick Actions
-      </Text>
+      <Text style={[styles.title, { color: colors.text }]}>Quick Actions</Text>
 
       {/* Action Cards */}
-      <TouchableOpacity
-        onPress={() => navigation.navigate("CreateRequest")}
-      >
+      <TouchableOpacity onPress={() => navigation.navigate("CreateRequest")}>
         <Card
           title="Create Blood Request"
           subtitle="Send a new request to available donors"
         />
       </TouchableOpacity>
 
-      <TouchableOpacity
-        onPress={() => navigation.navigate("Requests")}
-      >
+      <TouchableOpacity onPress={() => navigation.navigate("Requests")}>
         <Card
           title="View Active Requests"
           subtitle="Monitor pending and ongoing requests"
         />
       </TouchableOpacity>
 
-      <TouchableOpacity
+      {/* <TouchableOpacity
         onPress={() => navigation.navigate("Donors")}
       >
         <Card
           title="View Donors"
           subtitle="See matched or available donors"
         />
-      </TouchableOpacity>
+      </TouchableOpacity> */}
 
-      <TouchableOpacity
-        onPress={() => navigation.navigate("Profile")}
-      >
+      <TouchableOpacity onPress={() => navigation.navigate("Profile")}>
         <Card
           title="Hospital Profile"
           subtitle="Manage your hospital information"

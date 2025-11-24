@@ -1,37 +1,67 @@
 import React from "react";
-import { FlatList, StyleSheet, Text } from "react-native";
+import { FlatList, StyleSheet, Text, ActivityIndicator, View } from "react-native";
 import ScreenWrapper from "../../components/ScreenWrapper";
 import Card from "../../components/Card";
 import { useTheme } from "../../constants/theme";
 import { fontSizes, fonts } from "../../constants/fonts";
 import { sizes } from "../../constants/sizes";
-
-// Mock accepted requests
-const acceptedRequests = [
-  { id: "1", hospital: "City General Hospital", bloodType: "O+", status: "Pending" },
-  { id: "2", hospital: "HopeCare Clinic", bloodType: "B+", status: "Completed" },
-];
+import { useGetUserRequestsQuery } from "../../api/bloodRequestApi";
 
 export default function MyRequestsScreen() {
   const { colors } = useTheme();
 
+  // Fetch API data
+  const { data, isLoading, isError } = useGetUserRequestsQuery();
+  const requests = data?.data || [];
+  
   const renderItem = ({ item }) => (
     <Card>
-      <Text style={[styles.hospital, { color: colors.text }]}>{item.hospital}</Text>
+      <Text style={[styles.hospital, { color: colors.text }]}>
+        {item.hospital?.name || "Unknown Hospital"}
+      </Text>
+
       <Text style={[styles.detail, { color: colors.subText }]}>
         Blood Type: {item.bloodType}
       </Text>
+
+      <Text style={[styles.detail, { color: colors.subText }]}>
+        Units: {item.units}
+      </Text>
+
       <Text style={[styles.detail, { color: colors.subText }]}>
         Status: {item.status}
       </Text>
+
+      {item.notes ? (
+        <Text style={[styles.detail, { color: colors.subText }]}>
+          Notes: {item.notes}
+        </Text>
+      ) : null}
     </Card>
   );
 
   return (
     <ScreenWrapper scrollable={false}>
-      <Text style={[styles.title, { color: colors.text }]}>My Accepted Requests</Text>
+      <Text style={[styles.title, { color: colors.text }]}>My Requests</Text>
+
+      {isLoading && (
+        <ActivityIndicator size="large" color={colors.primary} />
+      )}
+
+      {isError && (
+        <Text style={{ color: "red", textAlign: "center" }}>
+          Failed to load your requests.
+        </Text>
+      )}
+
+      {!isLoading && data?.length === 0 && (
+        <Text style={{ color: colors.subText, textAlign: "center", marginTop: 20 }}>
+          You have no requests yet.
+        </Text>
+      )}
+
       <FlatList
-        data={acceptedRequests}
+        data={requests}
         keyExtractor={(item) => item.id}
         renderItem={renderItem}
         showsVerticalScrollIndicator={false}

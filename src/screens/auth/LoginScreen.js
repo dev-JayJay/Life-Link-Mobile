@@ -8,12 +8,15 @@ import { fontSizes, fonts } from "../../constants/fonts";
 import { sizes } from "../../constants/sizes";
 import { useLoginUserMutation } from "../../api/authApi";
 import Toast from "react-native-toast-message";
+import { useDispatch } from "react-redux";
+import { setCredentials } from "../../redux/slice/authSlice";
 
 const LoginScreen = ({ navigation }) => {
   const { colors } = useTheme();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
+  const dispatch = useDispatch();
   const [loginUser, { isLoading }] = useLoginUserMutation();
 
   const handleLogin = async () => {
@@ -28,6 +31,7 @@ const LoginScreen = ({ navigation }) => {
 
     try {
       const res = await loginUser({ email, password }).unwrap();
+      dispatch(setCredentials(res));
 
       Toast.show({
         type: "success",
