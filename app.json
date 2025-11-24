@@ -4,7 +4,7 @@
     "slug": "LifeLink",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/images/icon.png",
+    "icon": "./assets/images/life-link-logo.png",
     "scheme": "lifelink",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
