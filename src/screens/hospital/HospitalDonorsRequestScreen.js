@@ -21,7 +21,7 @@ export default function HospitalDonorsRequestScreen() {
 
   // Fetch hospital requests
   const { data, isLoading, isError } = useGetHospitalRequestsQuery();
-  console.log("this hospital data", data);
+
   const [acceptRequest] = useAcceptRequestMutation();
   const [rejectRequest] = useRejectRequestMutation();
 

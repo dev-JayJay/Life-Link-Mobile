@@ -11,7 +11,7 @@ export default function RecentDonorsScreen() {
   const { colors } = useTheme();
 
   const { data, isLoading, isError } = useGetHospitalDonationsQuery();
-  console.log("this is the recent donor data", data);
+
 
   const donors = data?.data || [];
 
