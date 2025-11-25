@@ -3,7 +3,7 @@ import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 export const authApi = createApi({
   reducerPath: 'authApi',
   baseQuery: fetchBaseQuery({
-    baseUrl: 'http://192.168.165.95:4000/api',
+    baseUrl: 'https://life-link-server-alpha.vercel.app/api',
   }),
   endpoints: (builder) => ({
     registerUser: builder.mutation({

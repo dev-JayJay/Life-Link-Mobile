@@ -3,7 +3,7 @@ import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 export const bloodRequestApi = createApi({
   reducerPath: "bloodRequestApi",
   baseQuery: fetchBaseQuery({
-    baseUrl: "http://192.168.165.95:4000/api",
+    baseUrl: "https://life-link-server-alpha.vercel.app/api",
     prepareHeaders: (headers, { getState }) => {
       const token = getState().auth?.token;
       if (token) {
