@@ -40,11 +40,12 @@ export default function DashboardScreen({ navigation }) {
   };
   const pendingRequests =
     data?.filter((item) => item.status === "pending") || [];
+    
 
   const renderItem = ({ item }) => {
     const urgencyColor =
       item.urgency === "High" ? colors.primary : colors.secondary;
-
+      const showButton = item.userId !== user?.id;
     return (
       <Card
         title={item.hospital?.name || "Unknown Hospital"}
@@ -54,11 +55,11 @@ export default function DashboardScreen({ navigation }) {
           borderLeftColor: urgencyColor,
         }}
       >
-        <Button
+       { showButton &&  <Button
           title="Accept Request"
           onPress={() => handleAccept(item.id)}
           style={{ marginTop: sizes.base }}
-        />
+        />}
       </Card>
     );
   };

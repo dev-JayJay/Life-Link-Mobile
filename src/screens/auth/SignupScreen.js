@@ -27,6 +27,7 @@ const SignupScreen = ({ navigation }) => {
   const [bloodType, setBloodType] = useState("");
   const [hospitalName, setHospitalName] = useState("");
   const [location, setLocation] = useState("");
+  const [address, setAddress] = useState("");
 
   const [locationCoords, setLocationCoords] = useState({
     latitude: 0,
@@ -77,7 +78,7 @@ const SignupScreen = ({ navigation }) => {
         !email.trim() ||
         !password.trim() ||
         !phone.trim() ||
-        !location.trim())
+        !address.trim())
     ) {
       Toast.show({
         type: "error",
@@ -106,6 +107,7 @@ const SignupScreen = ({ navigation }) => {
             latitude: locationCoords.latitude,
             longitude: locationCoords.longitude,
             role: "hospital",
+            address,
           };
 
     try {
@@ -241,9 +243,9 @@ const SignupScreen = ({ navigation }) => {
             />
 
             <Input
-              placeholder="Hospital Location"
-              value={location}
-              onChangeText={setLocation}
+              placeholder="Hospital Address"
+              value={address}
+              onChangeText={setAddress}
             />
           </>
         )}
